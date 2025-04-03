@@ -1,81 +1,100 @@
 # BearMod Android App
 
-## Automatización de Compilación y Despliegue
+## Build and Deployment Automation
 
-Este proyecto utiliza GitHub Actions para automatizar el proceso de compilación, pruebas y despliegue. La automatización ha sido implementada como una prioridad máxima para garantizar la calidad del código y facilitar el desarrollo continuo.
+This project uses GitHub Actions to automate the build, test, and deployment process. Automation has been implemented as a top priority to ensure code quality and facilitate continuous development.
 
-### Flujos de Trabajo Implementados
+### Implemented Workflows
 
-#### 1. Compilación Continua (CI)
-- **Archivo**: `.github/workflows/android-ci.yml`
-- **Propósito**: Compilar la aplicación automáticamente en cada push o pull request.
-- **Características**:
-  - Configuración automática del entorno de desarrollo (JDK, Android SDK, NDK)
-  - Caché de dependencias para acelerar las compilaciones
-  - Ejecución de la tarea personalizada `autoBuild`
-  - Publicación de artefactos de compilación
+#### 1. Continuous Integration (CI)
+- **File**: `.github/workflows/android-ci.yml`
+- **Purpose**: Automatically build the application on each push or pull request.
+- **Features**:
+  - Automatic setup of the development environment (JDK, Android SDK, NDK)
+  - Dependency caching to speed up builds
+  - Execution of the custom `autoBuild` task
+  - Publication of build artifacts
 
-#### 2. Pruebas Automatizadas
-- **Archivo**: `.github/workflows/android-test.yml`
-- **Propósito**: Ejecutar pruebas unitarias e instrumentadas.
-- **Características**:
-  - Ejecución de pruebas unitarias con JUnit
-  - Ejecución de pruebas instrumentadas en un emulador Android
-  - Publicación de resultados de pruebas
+#### 2. Automated Testing
+- **File**: `.github/workflows/android-test.yml`
+- **Purpose**: Run unit and instrumented tests.
+- **Features**:
+  - Execution of unit tests with JUnit
+  - Execution of instrumented tests on an Android emulator
+  - Publication of test results
 
-#### 3. Despliegue Automático
-- **Archivo**: `.github/workflows/android-release.yml`
-- **Propósito**: Generar y publicar versiones de la aplicación.
-- **Características**:
-  - Se activa al crear un tag con formato `v*` (ej: v1.0.0)
-  - Firma automática del APK
-  - Creación de una nueva release en GitHub con el APK firmado
+#### 3. Automated Deployment
+- **File**: `.github/workflows/android-release.yml`
+- **Purpose**: Generate and publish application versions.
+- **Features**:
+  - Triggered when creating a tag with the format `v*` (e.g., v1.0.0)
+  - Automatic APK signing
+  - Creation of a new GitHub release with the signed APK
 
-### Tarea Personalizada `autoBuild`
+### Custom `autoBuild` Task
 
-Se ha implementado una tarea personalizada de Gradle llamada `autoBuild` que:
+A custom Gradle task called `autoBuild` has been implemented that:
 
-1. Verifica la configuración del entorno de desarrollo
-2. Limpia el proyecto
-3. Compila la versión de depuración
-4. Ejecuta pruebas unitarias
-5. Maneja errores de forma robusta
+1. Verifies the development environment configuration
+2. Cleans the project
+3. Builds the debug version
+4. Runs unit tests
+5. Handles errors robustly
 
-### Cómo Utilizar la Automatización
+### How to Use the Automation
 
-#### Para Desarrolladores
-1. Realiza tus cambios en una rama separada
-2. Crea un Pull Request hacia `main`
-3. La automatización ejecutará la compilación y las pruebas
-4. Una vez aprobado y fusionado, los cambios pasarán a `main`
+#### For Developers
+1. Make your changes in a separate branch
+2. Create a Pull Request to `main`
+3. The automation will run the build and tests
+4. Once approved and merged, the changes will go to `main`
 
-#### Para Crear una Nueva Versión
-1. Asegúrate de que todos los cambios estén en la rama `main`
-2. Crea un nuevo tag con el formato `v1.x.x`:
+#### To Create a New Version
+1. Make sure all changes are in the `main` branch
+2. Create a new tag with the format `v1.x.x`:
    ```bash
    git tag v1.0.0
    git push origin v1.0.0
    ```
-3. El flujo de trabajo de release se activará automáticamente
-4. Una nueva release será creada en GitHub con el APK firmado
+3. The release workflow will be triggered automatically
+4. A new release will be created on GitHub with the signed APK
 
-### Requisitos para la Firma de APK
+## Keystore Setup for App Signing
 
-Para que el proceso de firma automática funcione, debes configurar los siguientes secretos en tu repositorio de GitHub:
+### Using an Existing Keystore
 
-- `SIGNING_KEY`: La clave de firma en formato Base64
-- `KEY_ALIAS`: El alias de la clave
-- `KEY_STORE_PASSWORD`: La contraseña del keystore
-- `KEY_PASSWORD`: La contraseña de la clave
+If you already have a keystore file (like `BearOwner.jks`), you can use the provided PowerShell script to prepare it for GitHub Actions:
 
-### Solución de Problemas
+```powershell
+# Run from the project root directory
+.\scripts\prepare-keystore.ps1 -KeystorePath "C:\path\to\your\keystore.jks" -KeyAlias "your_key_alias" -KeystorePassword "your_keystore_password" -KeyPassword "your_key_password"
+```
 
-Si encuentras problemas con la automatización:
+This script will encode your keystore file to base64 and provide instructions for setting up GitHub secrets.
 
-1. Verifica los logs de ejecución en la pestaña "Actions" de GitHub
-2. Asegúrate de que todas las variables de entorno necesarias estén configuradas
-3. Verifica que los secretos para la firma del APK estén correctamente configurados
+### GitHub Secrets Configuration
+
+For the automatic signing process to work, you must configure the following secrets in your GitHub repository:
+
+- `SIGNING_KEY`: The signing key in Base64 format
+- `KEY_ALIAS`: The key alias
+- `KEY_STORE_PASSWORD`: The keystore password
+- `KEY_PASSWORD`: The key password
+
+### Local Development
+
+For local development, you can place your keystore file in the `keystore` directory and update the `signingConfigs` section in `app/build.gradle.kts` with your keystore details.
+
+**Note:** Never commit your actual keystore files or passwords to the repository. The `.gitignore` file is configured to exclude `.keystore` and `.jks` files from version control.
+
+### Troubleshooting
+
+If you encounter issues with the automation:
+
+1. Check the execution logs in the "Actions" tab of GitHub
+2. Make sure all necessary environment variables are configured
+3. Verify that the APK signing secrets are correctly configured
 
 ---
 
-Con esta implementación, el proceso de compilación, pruebas y despliegue está completamente automatizado, permitiendo un desarrollo más rápido y confiable.
+With this implementation, the build, test, and deployment process is fully automated, allowing for faster and more reliable development.

@@ -17,6 +17,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            // These values are used when building locally
+            // For CI/CD, the values are provided by GitHub secrets
+            storeFile = file(System.getenv("KEYSTORE_FILE") ?: "../keystore/bearmod.keystore")
+            storePassword = System.getenv("KEY_STORE_PASSWORD") ?: "bearmod123"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "bearmod"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "bearmod123"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -24,6 +35,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
